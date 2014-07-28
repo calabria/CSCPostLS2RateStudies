@@ -3,6 +3,7 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/Event.h"
+#include <DataFormats/TrackReco/interface/Track.h> 
 
 #include "StandAloneMuonDataFormat.h"
 #include <TMath.h>
@@ -21,6 +22,8 @@ namespace CSCDataFormats
     void Reset() {sta_.Reset();}
 
   private:
+    int numberOSSF(edm::Handle<std::vector<reco::Track>> muons);
+
     CSCDataFormats::StandAloneMuonDataFormat sta_;
 
   };
