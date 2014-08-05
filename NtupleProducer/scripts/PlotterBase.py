@@ -30,8 +30,8 @@ class PlotterBase(object):
         ROOT.gStyle.SetOptStat(0)
         self.outputdir = '/afs/hep.wisc.edu/user/dntaylor/public_html/%s/' % (output)
         python_mkdir(self.outputdir)
-        self.colors = [ROOT.EColor.kRed,ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kBlack,ROOT.EColor.kOrange,ROOT.EColor.kTeal,ROOT.EColor.kViolet,ROOT.EColor.kMagenta]
-        self.markerStyles = [22,21,20,23,29,33,3,4,5]
+        self.colors = [ROOT.EColor.kRed,ROOT.EColor.kBlue,ROOT.EColor.kGreen,ROOT.EColor.kBlack,ROOT.EColor.kOrange,ROOT.EColor.kTeal,ROOT.EColor.kViolet,ROOT.EColor.kMagenta,ROOT.EColor.kTeal]
+        self.markerStyles = [22,21,20,23,29,33,3,4,5,6]
         self.trees = []
         self.labels = []
 
@@ -116,6 +116,7 @@ class PlotterBase(object):
                makeEfficiency   bool                     Make efficiency plot (Default 0)
                legend           string                   Legend location (Default topRight)
                                                          topRight, topLeft, bottomRight, bottomLeft
+               zoomEfficiency   bool                     Zoom effiency
            '''
         selection = kwargs.pop('selection','')
         selections = kwargs.pop('selections',[])
@@ -126,7 +127,8 @@ class PlotterBase(object):
         yaxis = kwargs.pop('yaxis','')
         title = kwargs.pop('title','')
         makeEfficiency = kwargs.pop('makeEfficiency',0)
-        if makeEfficiency and not yaxis: yaxis = "Efficieny"
+        zoomEfficiency = kwargs.pop('zoomEfficiency',0)
+        if makeEfficiency and not yaxis: yaxis = "Efficiency"
         if not yaxis: yaxis = "Events"
         legendLocation = kwargs.pop('legend','topRight')
         legendPositions = [0.65, 0.60, 0.89, 0.89]
@@ -161,6 +163,8 @@ class PlotterBase(object):
             if i == 0:
                 plots[i].SetTitle(title)
                 if makeEfficiency: plots[i].SetMaximum(1.2)
+                if zoomEfficiency: plots[i].SetMaximum(1.1)
+                if zoomEfficiency: plots[i].SetMinimum(0.9)
                 plots[i].GetXaxis().SetTitle(xaxis)
                 plots[i].GetYaxis().SetTitle(yaxis)
                 plots[i].Draw('ph')

@@ -55,7 +55,10 @@ void CSCDataFormats::StandAloneMuon::Set(const edm::Event& e, const edm::InputTa
 
    double ZMASS = 91.1876;
    double MUMASS = 0.105658;
-   double Z1 = 0;
+   double Z1 = -99999;
+   double Zmumu = -99999;
+   double pt1 = -99999;
+   double pt2 = -99999;
    TLorentzVector v1;
    TLorentzVector v2;
    TLorentzVector v;
@@ -76,11 +79,17 @@ void CSCDataFormats::StandAloneMuon::Set(const edm::Event& e, const edm::InputTa
             if (abs(Ztemp-ZMASS)<abs(Z1-ZMASS)){
                Z1 = Ztemp;
             }
+            if (mu1->pt()>=pt1) {
+               if (mu2->pt()>=pt2) {
+                  Zmumu = Ztemp;
+               }
+            }
          }
       }
    }
 
    sta_.muStandAloneZ.push_back(Z1);
+   sta_.muStandAloneZmumu.push_back(Zmumu);
 }
 
 int CSCDataFormats::StandAloneMuon::numberOSSF(edm::Handle<std::vector<reco::Track>> muons)

@@ -34,6 +34,7 @@ namespace CSCDataFormats
        muStandAlonePhi2p1.clear();
 
        muStandAloneZ.clear();
+       muStandAloneZmumu.clear();
     }
 
     int muonSize;
@@ -57,6 +58,7 @@ namespace CSCDataFormats
     std::vector<float> muStandAlonePhi2p1;
 
     std::vector<float> muStandAloneZ;
+    std::vector<float> muStandAloneZmumu;
   };
 }
 

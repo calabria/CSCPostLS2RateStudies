@@ -68,11 +68,16 @@ class CFEBBufferOverloadProducer : public edm::EDProducer {
       //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
       //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
-      bool checkOverload(int station, CLHEP::HepRandomEngine& engine);
+      bool checkOverload(int station, std::string type, CLHEP::HepRandomEngine& engine);
 
       // ----------member data ---------------------------
       edm::EDGetTokenT<CSCRecHit2DCollection> rh_token;
+      bool doCFEBFailure_;
+      bool doDDUFailure_;
+      bool doUniformFailure_;
       double failureRate_;
+      double latency_;
+      double l1aRate_;
 
       const CSCGeometry* geom_;
 };
@@ -91,7 +96,12 @@ class CFEBBufferOverloadProducer : public edm::EDProducer {
 //
 CFEBBufferOverloadProducer::CFEBBufferOverloadProducer(const edm::ParameterSet& iConfig)
 {
+   doCFEBFailure_ = iConfig.getUntrackedParameter<bool>("doCFEBFailure",true);
+   doDDUFailure_ = iConfig.getUntrackedParameter<bool>("doDDUFailure",true);
+   doUniformFailure_ = iConfig.getUntrackedParameter<bool>("doUniformFailure",false);
    failureRate_ = iConfig.getUntrackedParameter<double>("failureRate",0.1);
+   latency_ = iConfig.getUntrackedParameter<double>("latency",20.); // in microseconds
+   l1aRate_ = iConfig.getUntrackedParameter<double>("l1aRate",500.); // in kHz
    // consumes
    rh_token = consumes<CSCRecHit2DCollection>( iConfig.getParameter<edm::InputTag>("cscRecHitTag") );
 
@@ -139,12 +149,15 @@ CFEBBufferOverloadProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
  
    //std::cout << "Selecting Overloaded Buffers" << std::endl;
    bool bufferOverloaded[2][4][4][36][7] = {{{{{0}}}}}; //endcap, station, ring, chamber, cfeb
+   bool currChamberOverload = false;
    // iterate over each cfeb and decide if it had a buffer overload
    for (int endcap=1; endcap<3; endcap++) {
       for (int station=2; station<5; station++) {
          for (int chamber=1; chamber<19; chamber++) {
+            if (doDDUFailure_) currChamberOverload = checkOverload(station,"DDU",engine);
             for (int cfeb=1; cfeb<6; cfeb++) { 
-               bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = checkOverload(station,engine);
+               if (doCFEBFailure_) bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = checkOverload(station,"CFEB",engine);
+               if (currChamberOverload) bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = true;
                //if (bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1]) {
                //   std::cout << "  E: " << std::to_string(endcap) 
                //             << " S: " << std::to_string(station) 
@@ -190,10 +203,25 @@ CFEBBufferOverloadProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
 }
 
 bool
-CFEBBufferOverloadProducer::checkOverload(int station, CLHEP::HepRandomEngine& engine)
+CFEBBufferOverloadProducer::checkOverload(int station, std::string type, CLHEP::HepRandomEngine& engine)
 {
    double randomNumber = engine.flat();
-   return (randomNumber<failureRate_);
+   double failureRate = failureRate_;
+   if (doUniformFailure_) {
+     return (randomNumber<failureRate);
+   }
+   else {
+     // We will now fail based on the latency/l1aRate
+     if (type=="CFEB") { // the CFEB failure rate calculation
+       return (randomNumber<failureRate);
+     }
+     else if (type=="DDU") { // the DDU failure rate calculation
+       return (randomNumber<failureRate);
+     }
+     else { // have an error, give no failure
+       return false;
+     }
+   }
 }
 
 // ------------ method called once each job just before starting event loop  ------------
