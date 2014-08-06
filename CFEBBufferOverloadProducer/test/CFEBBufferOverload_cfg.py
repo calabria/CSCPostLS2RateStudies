@@ -30,6 +30,7 @@ process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -65,15 +66,16 @@ process.out = cms.OutputModule("PoolOutputModule",
     outputCommands = cms.untracked.vstring('drop *',
       "keep *_standAloneMuons_*_ReRecoBuffer",
       "keep *_globalMuons_*_ReRecoBuffer",
+      "keep *_muons_*_ReRecoBuffer",
       "keep *_csc2DRecHitsOverload_*_ReRecoBuffer",
       "keep *_csc2DRecHits_*_ReRecoBuffer",
       "keep *_cscSegments_*_ReRecoBuffer",
+      "keep *_genParticles_*_*",
     )
-
 )
 
 process.options = cms.untracked.PSet(
-
+    SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 
 # Additional output definition
@@ -86,12 +88,50 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgrade2019', '')
 # Path and EndPath definitions
 process.cscLocalRecoOverload = cms.Sequence(process.csc2DRecHitsOverload*process.cscSegments)
 process.preReco_step = cms.Path(process.cscLocalRecoOverload)
+process.reco_full = cms.Path(
+    process.offlineBeamSpot*
+    process.standalonemuontracking*
+    #process.recopixelvertexing*
+    #process.trackingGlobalReco*
+    #process.hcalGlobalRecoSequence*
+    process.particleFlowCluster*
+    process.ecalClusters*
+    process.caloTowersRec*
+    process.vertexreco*
+    process.egammaGlobalReco*
+    process.jetGlobalReco*
+    process.muonGlobalReco*
+    process.pfTrackingGlobalReco*
+    process.muoncosmicreco
+    #process.CastorFullReco*
+    #process.egammaHighLevelRecoPrePF*
+    #process.particleFlowReco*
+    #process.egammaHighLevelRecoPostPF*
+    #process.regionalCosmicTracksSeq*
+    #process.muoncosmichighlevelreco*
+    #process.muonshighlevelreco *
+    #process.particleFlowLinks*
+    #process.jetHighLevelReco*
+    #process.metrecoPlusHCALNoise*
+    #process.btagging*
+    #process.recoPFMET*
+    #process.PFTau*
+    #process.reducedRecHits
+)
 process.reconstruction_step = cms.Path(process.offlineBeamSpot * process.standAloneMuonSeeds * process.standAloneMuons * process.muonGlobalReco)
+moreModulesToRemove = list()
+moreModulesToRemove.append(process.CastorTowerReco)
+moreModulesToRemove.append(process.ak7BasicJets)
+moreModulesToRemove.append(process.ak7CastorJetID)
+#moreModulesToRemove.append(process.electronsWithPresel)
+#moreModulesToRemove.append(process.mvaElectrons)
+process.recoFromRECO = process.reconstruction_fromRECO_noTracking.copyAndExclude(moreModulesToRemove)
+process.reco_RECO = cms.Path(process.pfTrack*process.pfTrackElec*process.ecalDrivenGsfElectronCores*process.ecalDrivenGsfElectrons*process.recoFromRECO)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.out_step = cms.EndPath(process.out)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.preReco_step,process.reconstruction_step,process.endjob_step,process.out_step)
+process.schedule = cms.Schedule(process.preReco_step,process.reco_RECO,process.endjob_step,process.out_step)
 
 # customisation of the process.
 
