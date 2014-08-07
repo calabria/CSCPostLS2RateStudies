@@ -34,7 +34,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
@@ -55,7 +55,8 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
-
+keepTrajectory = cms.untracked.vstring('keep *_generalTracks_*_*')
+process.RECOSIMEventContent.outputCommands.extend(keepTrajectory)
 process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),

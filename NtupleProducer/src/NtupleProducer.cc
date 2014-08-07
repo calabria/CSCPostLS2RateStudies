@@ -20,6 +20,7 @@
 NtupleProducer::NtupleProducer(const edm::ParameterSet& ps) : tree_(0) {
 
    muons_ = ps.getParameter<edm::InputTag>("muons");
+   genParticles_ = ps.getParameter<edm::InputTag>("genParticles");
 
    cscSTA = new CSCDataFormats::StandAloneMuon();
    cscSTA_data = cscSTA->getData();
@@ -44,7 +45,7 @@ void NtupleProducer::endJob() {
 void NtupleProducer::analyze(const edm::Event& e, const edm::EventSetup& es) {
 
    cscSTA->Reset();
-   cscSTA->Set(e,muons_); 
+   cscSTA->Set(e,muons_,genParticles_); 
    tree_->Fill();
 
 }

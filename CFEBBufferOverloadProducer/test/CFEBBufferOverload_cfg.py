@@ -7,6 +7,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 
 options.inputFiles = "/store/user/dntaylor/GluGluToHToZZTo4m_M-125_14TeV-powheg-pythia6/GluGluToHToZZTo4m_M-125_14TeV-powheg-pythia6_GEM2019Upg14_RECO/140711_132140/0000/GEM2019Upg14_1.root"
+#options.inputFiles = "file:GEM2019Upg14.root"
 options.outputFile = "GEM2019Upg14_Buffer.root"
 options.register ('failureRate', 0.1, VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose failure probability")
 options.register ('latency', 20., VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose L1A latency (microseconds)")
@@ -30,6 +31,7 @@ process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+#process.load('RecoMuon.Configuration.RecoMuon_cff')
 process.load("RecoTracker.TrackProducer.TrackRefitters_cff")
 
 
@@ -71,6 +73,7 @@ process.out = cms.OutputModule("PoolOutputModule",
       "keep *_csc2DRecHits_*_ReRecoBuffer",
       "keep *_cscSegments_*_ReRecoBuffer",
       "keep *_genParticles_*_*",
+      "keep *_*uons_*_*",
     )
 )
 
@@ -84,61 +87,68 @@ process.options = cms.untracked.PSet(
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgrade2019', '')
 
+process.TrackRefitter.TrajectoryInEvent = cms.bool(False)
 
 # Path and EndPath definitions
 process.cscLocalRecoOverload = cms.Sequence(process.csc2DRecHitsOverload*process.cscSegments)
 process.preReco_step = cms.Path(process.cscLocalRecoOverload)
-process.reco_full = cms.Path(
+process.reconstruction_step = cms.Path(process.offlineBeamSpot * process.standAloneMuonSeeds * process.standAloneMuons)
+process.localReReco = cms.Sequence()#process.siPixelRecHits+
+                                   #process.siStripMatchedRecHits+
+                                   #process.hbhereflag+
+                                   #process.particleFlowCluster+
+                                   #process.ecalClusters)
+process.globalReReco =  cms.Sequence(process.offlineBeamSpot+
+                                     #process.TrackRefitter+
+                                     #process.recopixelvertexing+
+                                     #process.ckftracks+
+                                     #process.caloTowersRec+
+                                     #process.vertexreco+
+                                     #process.recoJets+
+                                     process.muonrecoComplete)#+
+                                     #process.muoncosmicreco+
+                                     #process.egammaGlobalReco+
+                                     #process.pfTrackingGlobalReco)#+
+                                     #process.egammaHighLevelRecoPrePF+
+                                     #process.muoncosmichighlevelreco+
+                                     #process.metreco)
+process.pfReReco = cms.Sequence()#process.particleFlowReco+
+                                #process.egammaHighLevelRecoPostPF+
+                                #process.muonshighlevelreco)#+
+                                #process.particleFlowLinks+
+                                #process.recoPFJets+
+                                #process.recoPFMET+
+                                #process.PFTau)
+process.reconstruction_muons = cms.Path(
     process.offlineBeamSpot*
-    process.standalonemuontracking*
-    #process.recopixelvertexing*
-    #process.trackingGlobalReco*
-    #process.hcalGlobalRecoSequence*
-    process.particleFlowCluster*
-    process.ecalClusters*
-    process.caloTowersRec*
-    process.vertexreco*
-    process.egammaGlobalReco*
-    process.jetGlobalReco*
-    process.muonGlobalReco*
-    process.pfTrackingGlobalReco*
-    process.muoncosmicreco
-    #process.CastorFullReco*
-    #process.egammaHighLevelRecoPrePF*
-    #process.particleFlowReco*
-    #process.egammaHighLevelRecoPostPF*
-    #process.regionalCosmicTracksSeq*
-    #process.muoncosmichighlevelreco*
-    #process.muonshighlevelreco *
-    #process.particleFlowLinks*
-    #process.jetHighLevelReco*
-    #process.metrecoPlusHCALNoise*
-    #process.btagging*
-    #process.recoPFMET*
-    #process.PFTau*
-    #process.reducedRecHits
-)
-process.reconstruction_step = cms.Path(process.offlineBeamSpot * process.standAloneMuonSeeds * process.standAloneMuons * process.muonGlobalReco)
-moreModulesToRemove = list()
-moreModulesToRemove.append(process.CastorTowerReco)
-moreModulesToRemove.append(process.ak7BasicJets)
-moreModulesToRemove.append(process.ak7CastorJetID)
-#moreModulesToRemove.append(process.electronsWithPresel)
-#moreModulesToRemove.append(process.mvaElectrons)
-process.recoFromRECO = process.reconstruction_fromRECO_noTracking.copyAndExclude(moreModulesToRemove)
-process.reco_RECO = cms.Path(process.pfTrack*process.pfTrackElec*process.ecalDrivenGsfElectronCores*process.ecalDrivenGsfElectrons*process.recoFromRECO)
+    process.standAloneMuonSeeds*
+    process.standAloneMuons*
+    process.refittedStandAloneMuons*
+    process.globalmuontracking*
+    process.muonIdProducerSequence*
+    process.muIsolation*
+    process.muonreco_with_SET*
+    process.muonSelectionTypeSequence*
+    process.pfReReco)
+process.ReReco = cms.Path(process.standAloneMuonSeeds+process.localReReco+process.globalReReco+process.pfReReco)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.out_step = cms.EndPath(process.out)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.preReco_step,process.reco_RECO,process.endjob_step,process.out_step)
+process.schedule = cms.Schedule(process.preReco_step,process.ReReco,process.endjob_step,process.out_step)
 
 # customisation of the process.
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2019WithGem
+#from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2019WithGem
+from SLHCUpgradeSimulations.Configuration.combinedCustoms import *
 
 #call to customisation function cust_2019WithGem imported from SLHCUpgradeSimulations.Configuration.combinedCustoms
-process = cust_2019WithGem(process)
+#process = cust_2019WithGem(process)
+process=customisePostLS1(process)
+process=customisePhase1Tk(process)
+process=customise_HcalPhase1(process)
+process=jetCustoms.customise_jets(process)
+process=customise_gem2019(process)
 
 # End of customisation functions

@@ -41,6 +41,7 @@ class NtupleProducer : public edm::EDAnalyzer {
 
    // pat muons
       edm::InputTag muons_;
+      edm::InputTag genParticles_;
       CSCDataFormats::StandAloneMuon* cscSTA;
       CSCDataFormats::StandAloneMuonDataFormat* cscSTA_data; 
 

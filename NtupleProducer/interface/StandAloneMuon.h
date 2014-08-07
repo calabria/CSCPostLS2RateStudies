@@ -17,7 +17,7 @@ namespace CSCDataFormats
     StandAloneMuon();
     ~StandAloneMuon();
 
-    void Set(const edm::Event& e, const edm::InputTag& muons_);
+    void Set(const edm::Event& e, const edm::InputTag& muons_, const edm::InputTag& genParticles_);
     StandAloneMuonDataFormat* getData() {return &sta_;}
     void Reset() {sta_.Reset();}
 

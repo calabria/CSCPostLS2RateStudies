@@ -6,7 +6,8 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 
-options.inputFiles = "file:GEM2019Upg14_CFEBBufferOverload_0p01.root"
+#options.inputFiles = "file:GEM2019Upg14_CFEBBufferOverload_0p01.root"
+options.inputFiles = "file:/hdfs/store/user/dntaylor/BufferOverload_HZZ_0p10_CFEB_v8-CFEBBufferOverload_cfg/CFEBBufferOverload_cfg-GEM2019Upg14_9.root"
 options.outputFile = "CFEBBufferOverload_StandAloneMuon.root"
 options.parseArguments()
 
@@ -44,7 +45,8 @@ process.TFileService = cms.Service("TFileService",
 )
 
 process.skim = cms.EDAnalyzer("NtupleProducer",
-    muons = cms.InputTag("standAloneMuons"),
+    muons = cms.InputTag("standAloneMuons","","ReRecoBuffer"),
+    genParticles = cms.InputTag("genParticles"),
 )
 
 process.p = cms.Path(

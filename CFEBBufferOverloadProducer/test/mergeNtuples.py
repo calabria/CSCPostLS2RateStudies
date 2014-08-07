@@ -4,7 +4,7 @@ A simple script to easily submit all jobs for buffer rereco studies.
 
 import subprocess
 
-version = 'v1'
+version = 'v2'
 datasets = ['HZZ', 'ZZ', 'Zprime']
 failureStrings = ['0p00', '0p01', '0p02', '0p05', '0p10', '0p20', '0p03', '0p50', '1p00']
 failureModes = ["BOTH", "CFEB", "DDU"]

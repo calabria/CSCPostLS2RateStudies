@@ -4,6 +4,8 @@
 #include <DataFormats/TrackReco/interface/Track.h>
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/TrackReco/interface/HitPattern.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 #include <cmath>
 #include "TLorentzVector.h"
@@ -16,10 +18,13 @@ CSCDataFormats::StandAloneMuon::~StandAloneMuon()
 {
 }
 
-void CSCDataFormats::StandAloneMuon::Set(const edm::Event& e, const edm::InputTag& muons_) 
+void CSCDataFormats::StandAloneMuon::Set(const edm::Event& e, const edm::InputTag& muons_, const edm::InputTag& genParticles_) 
 {
    edm::Handle<std::vector<reco::Track>> muons;
    e.getByLabel(muons_,muons);
+
+   edm::Handle<std::vector<reco::GenParticle>> genParticles;
+   e.getByLabel(genParticles_,genParticles);
 
    sta_.muonSize = muons->size();
 
@@ -47,6 +52,42 @@ void CSCDataFormats::StandAloneMuon::Set(const edm::Event& e, const edm::InputTa
          sta_.muStandAloneP2p1.push_back(mu1->p());
          sta_.muStandAloneEta2p1.push_back(mu1->eta());
          sta_.muStandAlonePhi2p1.push_back(mu1->phi());
+      }
+
+      for(std::vector<reco::GenParticle>::const_iterator gen1=genParticles->begin(); gen1!=genParticles->end(); ++gen1){
+         if (std::abs(gen1->pdgId())==13) {
+            // Match to muon by deltaR (take first match)
+            if (std::abs(deltaR<reco::Track,reco::GenParticle>(*mu1,*gen1))<0.1) {
+               sta_.muGenPt.push_back(gen1->pt());
+               sta_.muGenP.push_back(gen1->p());
+               sta_.muGenEta.push_back(gen1->eta());
+               sta_.muGenPhi.push_back(gen1->phi());
+
+               sta_.muDeltaPt.push_back(mu1->pt()-gen1->pt());
+               sta_.muResolution.push_back((mu1->pt()-gen1->pt())/gen1->pt());
+
+               if (abs(mu1->eta())>1.6) {
+                  sta_.muGenPt1p6.push_back(gen1->pt());
+                  sta_.muGenP1p6.push_back(gen1->p());
+                  sta_.muGenEta1p6.push_back(gen1->eta());
+                  sta_.muGenPhi1p6.push_back(gen1->phi());
+
+                  sta_.muDeltaPt1p6.push_back(mu1->pt()-gen1->pt());
+                  sta_.muResolution1p6.push_back((mu1->pt()-gen1->pt())/gen1->pt());
+               }
+
+               if (abs(mu1->eta())>2.1) {
+                  sta_.muGenPt2p1.push_back(gen1->pt());
+                  sta_.muGenP2p1.push_back(gen1->p());
+                  sta_.muGenEta2p1.push_back(gen1->eta());
+                  sta_.muGenPhi2p1.push_back(gen1->phi());
+
+                  sta_.muDeltaPt2p1.push_back(mu1->pt()-gen1->pt());
+                  sta_.muResolution2p1.push_back((mu1->pt()-gen1->pt())/gen1->pt());
+               }
+               break; // found matching
+            }
+         }
       }
    }
 

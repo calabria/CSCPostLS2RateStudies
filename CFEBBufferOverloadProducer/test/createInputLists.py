@@ -5,7 +5,7 @@ A simple script to list the input files
 import subprocess
 import os
 
-version = 'v5'
+version = 'v7'
 datasets = ['HZZ', 'ZZ', 'Zprime']
 failureStrings = ['0p00', '0p01', '0p02', '0p05', '0p10', '0p20', '0p03', '0p50', '1p00']
 failureModes = ["BOTH", "CFEB", "DDU"]
