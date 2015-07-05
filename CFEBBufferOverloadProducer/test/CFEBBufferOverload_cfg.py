@@ -6,15 +6,12 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 
-options.inputFiles = "/store/user/dntaylor/GluGluToHToZZTo4m_M-125_14TeV-powheg-pythia6/GluGluToHToZZTo4m_M-125_14TeV-powheg-pythia6_GEM2019Upg14_RECO/140711_132140/0000/GEM2019Upg14_1.root"
+options.inputFiles = "/store/relval/CMSSW_6_2_0_SLHC26_patch1/RelValMinBias_TuneZ2star_14TeV/GEN-SIM-RECO/DES19_62_V8_UP2019_des-v1/00000/FC4FDEE4-A41E-E511-A5EC-0025905A6090.root"
 #options.inputFiles = "file:GEM2019Upg14.root"
 options.outputFile = "GEM2019Upg14_Buffer.root"
-options.register ('failureRate', 0.1, VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose failure probability")
-options.register ('latency', 20., VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose L1A latency (microseconds)")
-options.register ('l1aRate', 500., VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose L1A rate (kHz)")
+options.register ('failureRate', 0.3, VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose failure probability")
 options.register ('doUniformFailure', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "run failure in all chambers evenly")
 options.register ('doCFEBFailure', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "explicitly set CFEB failure")
-options.register ('doDDUFailure', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "explicitly set DDU failure")
 options.parseArguments()
 
 
@@ -53,11 +50,8 @@ process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService
 process.csc2DRecHitsOverload = cms.EDProducer('CFEBBufferOverloadProducer',
     cscRecHitTag = cms.InputTag("csc2DRecHits"),
     failureRate = cms.untracked.double(options.failureRate),
-    latency = cms.untracked.double(20.), # in microseconds
-    l1aRate = cms.untracked.double(500.), # in kHz
     doUniformFailure = cms.untracked.bool(True),
     doCFEBFailure = cms.untracked.bool(True),
-    doDDUFailure = cms.untracked.bool(True)
 )
 
 # change input to cscSegments

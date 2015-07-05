@@ -97,11 +97,11 @@ class CFEBBufferOverloadProducer : public edm::EDProducer {
 CFEBBufferOverloadProducer::CFEBBufferOverloadProducer(const edm::ParameterSet& iConfig)
 {
    doCFEBFailure_ = iConfig.getUntrackedParameter<bool>("doCFEBFailure",true);
-   doDDUFailure_ = iConfig.getUntrackedParameter<bool>("doDDUFailure",true);
-   doUniformFailure_ = iConfig.getUntrackedParameter<bool>("doUniformFailure",false);
+   //doDDUFailure_ = iConfig.getUntrackedParameter<bool>("doDDUFailure",true);
+   doUniformFailure_ = iConfig.getUntrackedParameter<bool>("doUniformFailure",true);
    failureRate_ = iConfig.getUntrackedParameter<double>("failureRate",0.1);
-   latency_ = iConfig.getUntrackedParameter<double>("latency",20.); // in microseconds
-   l1aRate_ = iConfig.getUntrackedParameter<double>("l1aRate",500.); // in kHz
+   //latency_ = iConfig.getUntrackedParameter<double>("latency",20.); // in microseconds
+   //l1aRate_ = iConfig.getUntrackedParameter<double>("l1aRate",500.); // in kHz
    // consumes
    rh_token = consumes<CSCRecHit2DCollection>( iConfig.getParameter<edm::InputTag>("cscRecHitTag") );
 
@@ -152,9 +152,9 @@ CFEBBufferOverloadProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
    bool currChamberOverload = false;
    // iterate over each cfeb and decide if it had a buffer overload
    for (int endcap=1; endcap<3; endcap++) {
-      for (int station=2; station<5; station++) {
+      for (int station=3; station<5; station++) {
          for (int chamber=1; chamber<19; chamber++) {
-            if (doDDUFailure_) currChamberOverload = checkOverload(station,"DDU",engine);
+            //if (doDDUFailure_) currChamberOverload = checkOverload(station,"DDU",engine);
             for (int cfeb=1; cfeb<6; cfeb++) { 
                if (doCFEBFailure_) bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = checkOverload(station,"CFEB",engine);
                if (currChamberOverload) bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = true;
@@ -211,7 +211,7 @@ CFEBBufferOverloadProducer::checkOverload(int station, std::string type, CLHEP::
      return (randomNumber<failureRate);
    }
    else {
-     // We will now fail based on the latency/l1aRate
+     // We will now fail based on the latency/l1aRate (not implemented)
      if (type=="CFEB") { // the CFEB failure rate calculation
        return (randomNumber<failureRate);
      }
