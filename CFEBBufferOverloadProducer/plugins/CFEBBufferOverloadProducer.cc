@@ -78,6 +78,16 @@ class CFEBBufferOverloadProducer : public edm::EDProducer {
       double failureRate_;
       double latency_;
       double l1aRate_;
+      bool failME11_;
+      bool failME12_;
+      bool failME13_;
+      bool failME1a_;
+      bool failME21_;
+      bool failME22_;
+      bool failME31_;
+      bool failME32_;
+      bool failME41_;
+      bool failME42_;
 
       const CSCGeometry* geom_;
 };
@@ -102,6 +112,16 @@ CFEBBufferOverloadProducer::CFEBBufferOverloadProducer(const edm::ParameterSet& 
    failureRate_ = iConfig.getUntrackedParameter<double>("failureRate",0.1);
    //latency_ = iConfig.getUntrackedParameter<double>("latency",20.); // in microseconds
    //l1aRate_ = iConfig.getUntrackedParameter<double>("l1aRate",500.); // in kHz
+   failME11_ = iConfig.getUntrackedParameter<bool>("failME11",true);
+   failME12_ = iConfig.getUntrackedParameter<bool>("failME12",true);
+   failME13_ = iConfig.getUntrackedParameter<bool>("failME13",true);
+   failME1a_ = iConfig.getUntrackedParameter<bool>("failME1a",true);
+   failME21_ = iConfig.getUntrackedParameter<bool>("failME21",true);
+   failME22_ = iConfig.getUntrackedParameter<bool>("failME22",true);
+   failME31_ = iConfig.getUntrackedParameter<bool>("failME31",true);
+   failME32_ = iConfig.getUntrackedParameter<bool>("failME32",true);
+   failME41_ = iConfig.getUntrackedParameter<bool>("failME41",true);
+   failME42_ = iConfig.getUntrackedParameter<bool>("failME42",true);
    // consumes
    rh_token = consumes<CSCRecHit2DCollection>( iConfig.getParameter<edm::InputTag>("cscRecHitTag") );
 
@@ -148,23 +168,32 @@ CFEBBufferOverloadProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
    std::vector<CSCRecHit2D> hitsInLayer;
  
    //std::cout << "Selecting Overloaded Buffers" << std::endl;
-   bool bufferOverloaded[2][4][4][36][7] = {{{{{0}}}}}; //endcap, station, ring, chamber, cfeb
-   bool currChamberOverload = false;
+   bool bufferOverloaded[2][4][4][36][5] = {{{{{0}}}}}; //endcap, station, ring, chamber, cfeb
+   //bool currChamberOverload = false;
+   //std::cout << "First 10 overloaded cfebs" << std::endl;
+   //int num = 0;
    // iterate over each cfeb and decide if it had a buffer overload
    for (int endcap=1; endcap<3; endcap++) {
-      for (int station=3; station<5; station++) {
-         for (int chamber=1; chamber<19; chamber++) {
-            //if (doDDUFailure_) currChamberOverload = checkOverload(station,"DDU",engine);
-            for (int cfeb=1; cfeb<6; cfeb++) { 
-               if (doCFEBFailure_) bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = checkOverload(station,"CFEB",engine);
-               if (currChamberOverload) bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1] = true;
-               //if (bufferOverloaded[endcap-1][station-1][0][chamber-1][cfeb-1]) {
-               //   std::cout << "  E: " << std::to_string(endcap) 
-               //             << " S: " << std::to_string(station) 
-               //             << " R: 1 C: " << std::to_string(chamber) 
-               //             << " B: " << std::to_string(cfeb) << std::endl;
-               //}
-            }
+      for (int station=1; station<5; station++) {
+         for (int ring=1; ring<5; ring++) {                                                              // ME1: ring 4 = a
+             if (station>1 && ring>2) continue;                                                          // 2 rings in all but me1
+             for (int chamber=1; chamber<37; chamber++) {
+                if (station>1 && ring==1 && chamber>18) continue;                                        // inner rings ME2,3,4 18 chambers only
+                //if (doDDUFailure_) currChamberOverload = checkOverload(station,"DDU",engine);
+                for (int cfeb=1; cfeb<6; cfeb++) { 
+                   if ((station==1 && ring==1 && cfeb>4) || (station==1 && ring==4 && cfeb>3)) continue; // 4(3) dcfebs on me11(/a), 5 cfebs elsewhere
+                   if (doCFEBFailure_) bufferOverloaded[endcap-1][station-1][ring-1][chamber-1][cfeb-1] = checkOverload(station,"CFEB",engine);
+                   //if (currChamberOverload) bufferOverloaded[endcap-1][station-1][ring-1][chamber-1][cfeb-1] = true;
+                   //if (bufferOverloaded[endcap-1][station-1][ring-1][chamber-1][cfeb-1] && num<10) {
+                   //   std::cout << " E: " << std::to_string(endcap) 
+                   //             << " S: " << std::to_string(station) 
+                   //             << " R: " << std::to_string(ring)
+                   //             << " C: " << std::to_string(chamber) 
+                   //             << " B: " << std::to_string(cfeb) << std::endl;
+                   //   num++;
+                   //}
+                }
+             }
          }
       }
    }

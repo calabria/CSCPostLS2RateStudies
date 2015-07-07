@@ -9,7 +9,7 @@ options = VarParsing ('analysis')
 options.inputFiles = "/store/relval/CMSSW_6_2_0_SLHC26_patch1/RelValMinBias_TuneZ2star_14TeV/GEN-SIM-RECO/DES19_62_V8_UP2019_des-v1/00000/FC4FDEE4-A41E-E511-A5EC-0025905A6090.root"
 #options.inputFiles = "file:GEM2019Upg14.root"
 options.outputFile = "GEM2019Upg14_Buffer.root"
-options.register ('failureRate', 0.3, VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose failure probability")
+options.register ('failureRate', 0.15, VarParsing.multiplicity.singleton, VarParsing.varType.float, "choose failure probability")
 options.register ('doUniformFailure', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "run failure in all chambers evenly")
 options.register ('doCFEBFailure', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "explicitly set CFEB failure")
 options.parseArguments()
