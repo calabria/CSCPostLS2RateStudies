@@ -176,12 +176,12 @@ CFEBBufferOverloadProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
    for (int endcap=1; endcap<3; endcap++) {
       for (int station=1; station<5; station++) {
          for (int ring=1; ring<5; ring++) {                                                              // ME1: ring 4 = a
-             if (station>1 && ring>2) continue;                                                          // 2 rings in all but me1
+             //if (station>1 && ring>2) continue;                                                          // 2 rings in all but me1
              for (int chamber=1; chamber<37; chamber++) {
-                if (station>1 && ring==1 && chamber>18) continue;                                        // inner rings ME2,3,4 18 chambers only
+                //if (station>1 && ring==1 && chamber>18) continue;                                        // inner rings ME2,3,4 18 chambers only
                 //if (doDDUFailure_) currChamberOverload = checkOverload(station,"DDU",engine);
                 for (int cfeb=1; cfeb<6; cfeb++) { 
-                   if ((station==1 && ring==1 && cfeb>4) || (station==1 && ring==4 && cfeb>3)) continue; // 4(3) dcfebs on me11(/a), 5 cfebs elsewhere
+                   //if ((station==1 && ring==1 && cfeb>4) || (station==1 && ring==4 && cfeb>3)) continue; // 4(3) dcfebs on me11(/a), 5 cfebs elsewhere
                    if (doCFEBFailure_) bufferOverloaded[endcap-1][station-1][ring-1][chamber-1][cfeb-1] = checkOverload(station,"CFEB",engine);
                    //if (currChamberOverload) bufferOverloaded[endcap-1][station-1][ring-1][chamber-1][cfeb-1] = true;
                    //if (bufferOverloaded[endcap-1][station-1][ring-1][chamber-1][cfeb-1] && num<10) {
@@ -216,7 +216,7 @@ CFEBBufferOverloadProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
       prevId = currId;
       int numStrips = hit.nStrips();
       int strip = ((numStrips==3) ? hit.channels(1) : hit.channels(0));
-      int cfeb = ceil(strip/80.0);
+      int cfeb = ceil(strip/16.0);
       //std::cout << "CSCDetID: " << currId << " B: " << std::to_string(cfeb);
       if (!bufferOverloaded[currId.endcap()-1][currId.station()-1][currId.ring()-1][currId.chamber()-1][cfeb-1]) {
          //std::cout << " added" << std::endl;
